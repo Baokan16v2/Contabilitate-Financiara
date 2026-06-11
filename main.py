@@ -16,7 +16,10 @@ PDF_FILES = {
     "Capitolul 2 P6": "cap2_151-186.pdf",
     "Capitolul 3 P1": "cap3_1-30.pdf",
     "Capitolul 3 P2": "cap3_24-62.pdf",
-    "Capitolul 3 P3": "cap3_103-133.pdf"
+    "Capitolul 3 P3": "cap3_103-133.pdf",
+    "Capitolul 4" : "cap4.pdf",
+    "Capitolul 5" : "cap5.pdf
+    
 }
 
 # --- 2. PARSAREA PDF-ULUI ---
