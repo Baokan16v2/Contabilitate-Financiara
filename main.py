@@ -20,7 +20,6 @@ PDF_FILES = {
 }
 
 # --- 2. PARSAREA PDF-ULUI ---
-# --- 2. PARSAREA PDF-ULUI ---
 def parse_pdf_quiz(file_path):
     if not os.path.exists(file_path):
         return []
@@ -41,19 +40,19 @@ def parse_pdf_quiz(file_path):
     current_options = []
     correct_indices = []
     
-    # Folosim o stare pentru a ști dacă citim enunțul sau opțiunile
     state = "question" 
-    
     opt_pattern = re.compile(r'^(@?)([a-zA-Z])\)\s*(.+)')
 
-    # Funcție ajutătoare pentru a recunoaște dacă un text pare a fi o întrebare nouă
+    # Funcție ajutătoare pentru a elimina indexul vechi (ex: "3. ", "12. ", "123. ")
+    def clean_question_index(text_str):
+        # Elimină cifrele urmate de punct sau spațiu de la începutul textului
+        return re.sub(r'^\d+[\.\s\-–]*', '', text_str).strip()
+
     def looks_like_new_question(line_text):
-        # Curățăm semnele de punctuație de la început (ex: ghilimele)
         clean_text = re.sub(r'^[^a-zA-Z0-9ĂÎÂȘȚăîâșț]+', '', line_text)
         if not clean_text:
             return False
         first_char = clean_text[0]
-        # E întrebare nouă dacă începe cu literă Mare sau cu un număr
         return first_char.isupper() or first_char.isdigit()
 
     for line in lines:
@@ -61,16 +60,13 @@ def parse_pdf_quiz(file_path):
         if not line:
             continue
             
-        # Ignorăm titlurile de pagini
         if line.lower().startswith("capitolul") or line.lower().startswith("grile"):
             continue
 
         opt_match = opt_pattern.match(line)
         
         if opt_match:
-            # Am dat de o opțiune a), b), c) -> schimbăm starea
             state = "options"
-            
             is_correct = bool(opt_match.group(1) == '@')
             opt_text = opt_match.group(3)
             
@@ -82,13 +78,14 @@ def parse_pdf_quiz(file_path):
             if is_correct:
                 correct_indices.append(len(current_options) - 1)
         else:
-            # Nu este o opțiune (nu are a, b, c în față)
             if state == "options":
-                # Suntem la opțiuni, dar linia nu are literă. E continuare sau întrebare nouă?
                 if looks_like_new_question(line):
-                    # Salvează întrebarea veche și începe una nouă
+                    # --- AICI MODIFICĂM: Curățăm textul înainte de a-l salva ---
+                    raw_q_text = " ".join(current_q_text).strip()
+                    cleaned_q_text = clean_question_index(raw_q_text)
+                    
                     questions.append({
-                        "text": " ".join(current_q_text).strip(),
+                        "text": cleaned_q_text,
                         "options": current_options,
                         "correct_indices": correct_indices
                     })
@@ -97,17 +94,18 @@ def parse_pdf_quiz(file_path):
                     correct_indices = []
                     state = "question"
                 else:
-                    # E o literă mică, deci e continuarea ultimei opțiuni! (Rezolvă problema ta)
                     if current_options:
                         current_options[-1] += " " + line
             else:
-                # Suntem deja în modul de citire a întrebării
                 current_q_text.append(line)
                 
-    # Adăugăm ultima întrebare din fișier
+    # --- AICI MODIFICĂM și pentru ultima întrebare din fișier ---
     if current_q_text and current_options:
+        raw_q_text = " ".join(current_q_text).strip()
+        cleaned_q_text = clean_question_index(raw_q_text)
+        
         questions.append({
-            "text": " ".join(current_q_text).strip(),
+            "text": cleaned_q_text,
             "options": current_options,
             "correct_indices": correct_indices
         })
