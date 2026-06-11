@@ -18,7 +18,7 @@ PDF_FILES = {
     "Capitolul 3 P2": "cap3_24-62.pdf",
     "Capitolul 3 P3": "cap3_103-133.pdf",
     "Capitolul 4" : "cap4.pdf",
-    "Capitolul 5" : "cap5.pdf
+    "Capitolul 5" : "cap5.pdf"
     
 }
 
